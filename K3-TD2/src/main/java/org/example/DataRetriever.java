@@ -41,7 +41,6 @@ public class DataRetriever {
                     player.setName(rs.getString("player_name"));
                     player.setAge(rs.getInt("age"));
                     player.setPosition(PlayerPositionEnum.valueOf(rs.getString("position")));
-                    player.setTeam(team);
                     players.add(player);
                 }
             }
@@ -117,10 +116,28 @@ select player.id as player_id, player.name as player_name, player.age as age, pl
        return teams;
     }
     public List<Player> createPlayers(List<Player> newPlayers) {
-        throw new RuntimeException("Not yet implemented");
-    }
 
-    public Team saveTeam(Team teamToSave) throws SQLException {
+        String checkSql = "SELECT id FROM player WHERE id = ?";
+
+        if (newPlayers == null || newPlayers.isEmpty()) {
+            return new ArrayList<>();
+        }
+        try (Connection connection = dbConnection.getDBConnection();
+             PreparedStatement checkStmt = connection.prepareStatement(checkSql)) {
+            for (Player player : newPlayers) {
+                checkStmt.setInt(1, player.getId());
+                ResultSet rs = checkStmt.executeQuery();
+                if (rs.next()) {
+                    throw new RuntimeException("Le joueur ID " + player.getId() + " existe déjà");
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return newPlayers;
+    }
+        public Team saveTeam(Team teamToSave) throws SQLException {
         throw new RuntimeException("Not yet implemented");
     }
     public List<Player> findPlayersByCriteria(

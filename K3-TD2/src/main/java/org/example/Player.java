@@ -67,7 +67,6 @@ public  Player() {}
                 ", name='" + name + '\'' +
                 ", age=" + age +
                 ", position=" + position +
-                ",team=" + (team != null ? team.getName() : "No team")+
                 '}';
     }
 }

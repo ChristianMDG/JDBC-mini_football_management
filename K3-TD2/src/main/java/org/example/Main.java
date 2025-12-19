@@ -1,6 +1,6 @@
 package org.example;
 
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,22 +23,22 @@ public class Main {
         System.out.println("\nTest e:");
         System.out.println(dataRetriever.findTeamsByPlayerName("an"));
 
-//        System.out.println("\nTest f:");
-//        System.out.println(dataRetriever.findPlayersByCriteria("ud",PlayerPositionEnum.MIDF,"Madrid",ContinentEnum.EUROPA,1,10));
+        System.out.println("\nTest f:");
+        System.out.println(dataRetriever.findPlayersByCriteria("ud",null,null,null,1,10));
 
-        System.out.println("\nTest g:");
-
-            List<Player> testPlayers = new ArrayList<>();
-            testPlayers.add(new Player(6, "Jude Bellingham", 23, PlayerPositionEnum.STR, null));
-            testPlayers.add(new Player(7, "Pedri", 24, PlayerPositionEnum.MIDF, null));
-            System.out.println(dataRetriever.createPlayers(testPlayers));
-
-
-        System.out.println("\nTest h:");
-            List<Player> newPlayers = new ArrayList<>();
-            newPlayers.add(new Player(6, "Vini", 25, PlayerPositionEnum.STR, null));
-            newPlayers.add(new Player(7, "Pedri", 24, PlayerPositionEnum.MIDF, null));
-            System.out.println(dataRetriever.createPlayers(newPlayers));
+//        System.out.println("\nTest g:");
+//
+//            List<Player> testPlayers = new ArrayList<>();
+//            testPlayers.add(new Player(6, "Jude Bellingham", 23, PlayerPositionEnum.STR, null));
+//            testPlayers.add(new Player(7, "Pedri", 24, PlayerPositionEnum.MIDF, null));
+//            System.out.println(dataRetriever.createPlayers(testPlayers));
+//
+//
+//        System.out.println("\nTest h:");
+//            List<Player> newPlayers = new ArrayList<>();
+//            newPlayers.add(new Player(6, "Vini", 25, PlayerPositionEnum.STR, null));
+//            newPlayers.add(new Player(7, "Pedri", 24, PlayerPositionEnum.MIDF, null));
+//            System.out.println(dataRetriever.createPlayers(newPlayers));
 
         System.out.println("\nTest i:");
             Team rm = dataRetriever.findTeamById(1);
@@ -53,3 +53,6 @@ public class Main {
 
     }
 }
+
+
+

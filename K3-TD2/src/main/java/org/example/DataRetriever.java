@@ -265,7 +265,7 @@ select player.id as player_id, player.name as player_name, player.age as age, pl
             parameters.add(continent.name());
         }
 
-        query.append(" ORDER BY p.id "); // optionnel : tri par id
+        query.append(" ORDER BY p.id ");
         query.append(" LIMIT ? OFFSET ? ");
         parameters.add(size);
         parameters.add(page * size);

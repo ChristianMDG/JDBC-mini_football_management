@@ -153,66 +153,102 @@ select player.id as player_id, player.name as player_name, player.age as age, pl
        return teams;
     }
 
-    List<Player> findPlayersByCriteria(
+    public List<Player> findPlayersByCriteria(
             String playerName,
             PlayerPositionEnum position,
             String teamName,
             ContinentEnum continent,
             int page,
             int size
-    )throws SQLException {
-        Team team = new Team();
+    ) throws SQLException {
+
         List<Player> players = new ArrayList<>();
-        StringBuilder findPlayersByCriteriaQuery = new StringBuilder("""
-                select  player.id as player_id, player.name as player_name, player.age as age, player.position as position, team.name as  
-                team from  player
-                left join team on player.id_team = team.id
-                where 1 = 1
-                """);
-        List<Object> parameters = new ArrayList<>();
 
-        if (playerName != null) {
-            findPlayersByCriteriaQuery.append("and player.name like ? ");
-            parameters.add("%" + playerName + "%");
+        StringBuilder sql = new StringBuilder("""
+        select 
+            p.id as player_id,
+            p.name as player_name,
+            p.age,
+            p.position,
+            t.id as team_id,
+            t.name as team_name,
+            t.continent
+        from player p
+        left join team t on p.id_team = t.id
+        where 1 = 1
+    """);
+
+        List<Object> params = new ArrayList<>();
+
+
+        if (playerName != null && !playerName.isBlank()) {
+            sql.append(" and p.name like ? ");
+            params.add("%" + playerName + "%");
         }
+
+
         if (position != null) {
-            findPlayersByCriteriaQuery.append("and player.position = ? ");
-            parameters.add(position);
+            sql.append(" and p.position = ?::enum_position ");
+            params.add(position.name());
         }
-        if (teamName != null) {
-            findPlayersByCriteriaQuery.append("and team.name = ? ");
-            parameters.add(teamName);
-        }
-        if (continent != null) {
-            findPlayersByCriteriaQuery.append("and player.position = ? ");
-            parameters.add(continent);
-        }
-        findPlayersByCriteriaQuery.append("limit ? offset ?");
 
+
+        if (teamName != null && !teamName.isBlank()) {
+            sql.append(" and t.name = ? ");
+            params.add(teamName);
+        }
+
+
+        if (continent != null) {
+            sql.append(" and t.continent = ?::enum_continent ");
+            params.add(continent.name());
+        }
+
+
+        sql.append(" limit ? offset ? ");
         int offset = (page - 1) * size;
-        parameters.add(size);
-        parameters.add(offset);
+        params.add(size);
+        params.add(offset);
 
         try (Connection connection = dbConnection.getDBConnection();
-        PreparedStatement statement = connection.prepareStatement(findPlayersByCriteriaQuery.toString())) {
+             PreparedStatement ps = connection.prepareStatement(sql.toString())) {
 
-            for (int i = 0; i < parameters.size(); i++) {
-                statement.setObject(i + 1, parameters.get(i));
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
             }
-            ResultSet rs = statement.executeQuery();
+
+            ResultSet rs = ps.executeQuery();
+
             while (rs.next()) {
-                if (rs.getInt("player_id") != 0) {
-                    Player player = new Player();
-                    player.setId(rs.getInt("player_id"));
-                    player.setName(rs.getString("player_name"));
-                    player.setAge(rs.getInt("age"));
-                    player.setPosition(PlayerPositionEnum.valueOf(rs.getString("position")));
-                    team.setName(rs.getString("team"));
+                Player player = new Player();
+                player.setId(rs.getInt("player_id"));
+                player.setName(rs.getString("player_name"));
+                player.setAge(rs.getInt("age"));
+                player.setPosition(
+                        PlayerPositionEnum.valueOf(rs.getString("position"))
+                );
+
+
+                int teamId = rs.getInt("team_id");
+                if (!rs.wasNull()) {
+                    Team team = new Team();
+                    team.setId(teamId);
+                    team.setName(rs.getString("team_name"));
+                    team.setContinent(
+                            ContinentEnum.valueOf(rs.getString("continent"))
+                    );
                     player.setTeam(team);
-                    players.add(player);
+                } else {
+                    player.setTeam(null);
                 }
+
+                players.add(player);
             }
         }
-    return  players;
+
+        return players;
     }
+
+
 }

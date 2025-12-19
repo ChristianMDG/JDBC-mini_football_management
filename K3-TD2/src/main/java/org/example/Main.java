@@ -12,7 +12,7 @@ public class Main {
         System.out.println(dataRetriever.findPlayers(1,2));
         System.out.println(dataRetriever.findPlayers(3,5));
         System.out.println(dataRetriever.findTeamsByPlayerName("an"));
-        System.out.println(dataRetriever.findPlayersByCriteria("ud",null,null,null,1,10));
+        System.out.println(dataRetriever.findPlayersByCriteria("ud",PlayerPositionEnum.MIDF,"Madrid",ContinentEnum.EUROPA,1,10));
 
     }
 }

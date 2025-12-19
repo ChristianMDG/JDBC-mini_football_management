@@ -117,41 +117,55 @@ select player.id as player_id, player.name as player_name, player.age as age, pl
 
         String checkSql = "SELECT id FROM player WHERE id = ?";
         String insertSql = "INSERT INTO player (id, name, age, position, id_team) VALUES (?, ?, ?, ?::enum_position, ?)";
+
         if (newPlayers == null || newPlayers.isEmpty()) {
             return new ArrayList<>();
         }
-        try (Connection connection = dbConnection.getDBConnection();
-             PreparedStatement checkStmt = connection.prepareStatement(checkSql)) {
-            for (Player player : newPlayers) {
-                checkStmt.setInt(1, player.getId());
-                ResultSet rs = checkStmt.executeQuery();
-                if (rs.next()) {
-                    throw new RuntimeException("Le joueur ID " + player.getId() + " existe déjà");
-                }
-            }
 
-            try (PreparedStatement insertStmt = connection.prepareStatement(insertSql)) {
-                for (Player player : newPlayers) {
-                    insertStmt.setInt(1, player.getId());
-                    insertStmt.setString(2, player.getName());
-                    insertStmt.setInt(3, player.getAge());
-                    insertStmt.setString(4, player.getPosition().name());
-                    if (player.getTeam() != null) {
-                        insertStmt.setInt(5, player.getTeam().getId());
-                    } else {
-                        insertStmt.setNull(5, Types.INTEGER);
+        try (Connection connection = dbConnection.getDBConnection()) {
+            connection.setAutoCommit(false);
+
+            try {
+                try (PreparedStatement checkStmt = connection.prepareStatement(checkSql)) {
+                    for (Player player : newPlayers) {
+                        checkStmt.setInt(1, player.getId());
+                        ResultSet rs = checkStmt.executeQuery();
+                        if (rs.next()) {
+                            connection.rollback();
+                            throw new RuntimeException("Player ID " + player.getId() + " already exists");
+                        }
                     }
-
-                    insertStmt.executeUpdate();
                 }
+
+                try (PreparedStatement insertStmt = connection.prepareStatement(insertSql)) {
+                    for (Player player : newPlayers) {
+                        insertStmt.setInt(1, player.getId());
+                        insertStmt.setString(2, player.getName());
+                        insertStmt.setInt(3, player.getAge());
+                        insertStmt.setString(4, player.getPosition().name());
+                        if (player.getTeam() != null) {
+                            insertStmt.setInt(5, player.getTeam().getId());
+                        } else {
+                            insertStmt.setNull(5, Types.INTEGER);
+                        }
+                        insertStmt.executeUpdate();
+                    }
+                }
+
+                connection.commit();
+                return new ArrayList<>(newPlayers);
+
+            } catch (SQLException e) {
+                connection.rollback();
+                throw new RuntimeException(e);
+            } catch (RuntimeException e) {
+                connection.rollback();
+                throw e;
             }
 
-            connection.commit();
-            return new ArrayList<>(newPlayers);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
         public Team saveTeam(Team teamToSave) throws SQLException {
         throw new RuntimeException("Not yet implemented");
